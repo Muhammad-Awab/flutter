@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:project_final/Screens/gallery.dart';
 
 class cameraAccess extends StatefulWidget {
   @override
@@ -13,36 +16,60 @@ class cameraAccess extends StatefulWidget {
 class _cameraAccessState extends State<cameraAccess> {
   File imagefile = File('assets/images/logo1.png');
 
+
   void _getFromCamera() async {
-    XFile? pickedFile = await ImagePicker().pickImage(
+    final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.camera,
       maxHeight: 1080,
       maxWidth: 1080,
     );
-    setState(() {
-      imagefile = File(pickedFile!.path);
-    });
-    final path = 'files/${pickedFile!.name}';
-    final Storageref = FirebaseStorage.instance.ref();
-    final mountainsRef = Storageref.child(path);
+    if (pickedFile == null) return;
 
-    mountainsRef.putFile(imagefile);
+    final imagefile = File(pickedFile.path);
+    setState(() {
+      this.imagefile = imagefile;
+    });
+
+    final path = 'files/${DateTime.now().microsecondsSinceEpoch}_${imagefile.path.split('/').last}';
+    final storageref = FirebaseStorage.instance.ref();
+    final mountainsRef = storageref.child(path);
+    final uploadTask = mountainsRef.putFile(imagefile);
+
+    uploadTask.whenComplete(() async {
+      final url = await mountainsRef.getDownloadURL();
+      await FirebaseFirestore.instance
+          .collection('images')
+          .add({'imageUrl': url,'UID':FirebaseAuth.instance.currentUser!.uid});
+      print(url);
+    }).catchError((onError) {
+      print(onError);
+    });
   }
 
   void _getFromGallery() async {
-    XFile? pickedFile = await ImagePicker().pickImage(
+    final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       maxHeight: 1080,
       maxWidth: 1080,
     );
-    setState(() {
-      imagefile = File(pickedFile!.path);
-    }); //.child(path)
-    final path = 'files/${pickedFile!.name}';
-    final Storageref = FirebaseStorage.instance.ref();
-    final mountainsRef = Storageref.child(path);
+    if (pickedFile == null) return;
 
-    mountainsRef.putFile(imagefile);
+    final imagefile = File(pickedFile.path);
+    setState(() {
+      this.imagefile = imagefile;
+    });
+
+    final path = 'files/${DateTime.now().microsecondsSinceEpoch}_${imagefile.path.split('/').last}';
+    final storageref = FirebaseStorage.instance.ref();
+    final mountainsRef = storageref.child(path);
+    final uploadTask = mountainsRef.putFile(imagefile);
+
+    uploadTask.whenComplete(() async {
+      final url = await mountainsRef.getDownloadURL();
+      print(url);
+    }).catchError((onError) {
+      print(onError);
+    });
   }
 
   //String filepath,
@@ -70,7 +97,9 @@ class _cameraAccessState extends State<cameraAccess> {
       ),
 
       body: ListView(children: [
-
+        ElevatedButton(onPressed: (){
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ImageDisplay(userId: FirebaseAuth.instance.currentUser!.uid)));
+        }, child: Text("Gallery")),
         Text(locationMessage.toString()),
         SizedBox(
           height: 20,
@@ -140,4 +169,3 @@ class _cameraAccessState extends State<cameraAccess> {
     );
   }
 }
-

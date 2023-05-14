@@ -7,11 +7,14 @@ void main() async{
   await Firebase.initializeApp(
     // Replace with actual values
     options: FirebaseOptions(
-        apiKey: "AIzaSyBIZ-LDmPDDaUelojkzSlmsbty-PTPC1Z4",
-        appId: "1:616602668865:android:01f450fc516b80674a5bc0",
-        messagingSenderId: "616602668865-7gtgd6q6a4fddvp0pu7d3d1v20ta20h2.apps.googleusercontent.com",
+        apiKey: "AIzaSyDp7DJ6SZuBIKzDwm0Vw-4mmjxBppj21f4",
+        authDomain: "androidproject-87417.firebaseapp.com",
+        databaseURL: "https://androidproject-87417-default-rtdb.firebaseio.com",
         projectId: "androidproject-87417",
-        storageBucket: "androidproject-87417.appspot.com"
+        storageBucket: "androidproject-87417.appspot.com",
+        messagingSenderId: "616602668865",
+        appId: "1:616602668865:web:f7eb4bdfbc8d8be24a5bc0"
+
     ),
   );
   runApp(const MyApp());
